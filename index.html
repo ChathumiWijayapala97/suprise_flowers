@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You, Chathumi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Caveat:wght@500;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink: #d9c3ec;
+    --pink-deep: #9b5fc0;
+    --maroon: #4a1f5c;
+    --cream: #faf6fd;
+    --ink: #3d3345;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+  }
+  body{
+    font-family: 'Playfair Display', serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ---------- global floating hearts/petals ---------- */
+  #hearts-container{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+  }
+  .heart{
+    position: absolute;
+    top: -5%;
+    font-size: 18px;
+    color: var(--pink-deep);
+    opacity: 0.55;
+    animation: fall linear forwards;
+    user-select: none;
+  }
+  @keyframes fall{
+    from{ transform: translateY(0) rotate(0deg); opacity: 0.7; }
+    to{ transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ---------- shared screen layout ---------- */
+  .screen{
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    scroll-snap-align: start;
+    position: relative;
+    padding: 60px 24px;
+    overflow: hidden;
+  }
+
+  .next-btn{
+    margin-top: 46px;
+    background: none;
+    border: 1px solid var(--pink-deep);
+    color: var(--maroon);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 16px;
+    padding: 10px 26px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all .25s ease;
+    letter-spacing: .5px;
+  }
+  .next-btn:hover{
+    background: var(--pink-deep);
+    color: #fff;
+  }
+
+  /* ================= INTRO ================= */
+  #intro{
+    background: radial-gradient(circle at 50% 40%, #fff 0%, var(--pink) 100%);
+  }
+  .gift-box{
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.06); }
+  }
+  .gift-box img{ width: 170px; height: auto; filter: drop-shadow(0 10px 18px rgba(74,31,92,0.35)); }
+  .gift-box p{
+    font-family: 'Dancing Script', cursive;
+    font-size: 28px;
+    color: var(--maroon);
+  }
+  .intro-title{
+    font-family: 'Dancing Script', cursive;
+    font-size: 30px;
+    color: var(--maroon);
+    margin-bottom: 40px;
+  }
+
+  /* ================= BOUQUET ================= */
+  #bouquet{
+    background: radial-gradient(circle at 50% 50%, #fffdfb 0%, #fbeef0 60%, var(--pink) 100%);
+  }
+  .bouquet-video{
+    height: min(62vh, 620px);
+    width: auto;
+    max-width: 90vw;
+    aspect-ratio: 740 / 982;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 18px 40px rgba(74,31,92,0.35);
+    opacity: 0;
+    transform: scale(0.9);
+    animation: videoIn 1s ease forwards;
+  }
+  @keyframes videoIn{
+    from{ opacity: 0; transform: scale(0.9); }
+    to{ opacity: 1; transform: scale(1); }
+  }
+
+  .from-me-text{
+    font-family: 'Dancing Script', cursive;
+    font-size: 38px;
+    max-width: 520px;
+    color: var(--maroon);
+    margin-top: 44px;
+    opacity: 0;
+    animation: fadeUp 1.2s ease forwards;
+    animation-delay: 5.5s;
+  }
+  @keyframes fadeUp{
+    from{ opacity:0; transform: translateY(16px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  /* ================= MEMORIES ================= */
+  #memories{
+    background: linear-gradient(180deg, var(--pink) 0%, #fdf6f3 100%);
+  }
+  .section-title{
+    font-family: 'Dancing Script', cursive;
+    font-size: 34px;
+    color: var(--maroon);
+    margin-bottom: 34px;
+  }
+  .polaroid-grid{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 16px;
+    max-width: 900px;
+  }
+  .polaroid{
+    background: #fff;
+    padding: 10px 10px 26px 10px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    transition: transform .25s ease;
+  }
+  .polaroid:hover{ transform: translateY(-6px) scale(1.03); z-index: 2; }
+  .polaroid:nth-child(odd){ transform: rotate(-3deg); }
+  .polaroid:nth-child(even){ transform: rotate(3deg); }
+  .polaroid:nth-child(odd):hover{ transform: rotate(-3deg) translateY(-6px) scale(1.03); }
+  .polaroid:nth-child(even):hover{ transform: rotate(3deg) translateY(-6px) scale(1.03); }
+  .photo-placeholder{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: repeating-linear-gradient(45deg, #ede0f5, #ede0f5 10px, #e3cdf0 10px, #e3cdf0 20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: var(--pink-deep);
+  }
+  .polaroid img,
+  .polaroid video{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    background: #ede0f5;
+  }
+  .polaroid p{
+    font-family: 'Caveat', cursive;
+    font-size: 15px;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+
+  /* ================= NOTE ================= */
+  #note{
+    background: #fdf6f3;
+  }
+  .letter{
+    max-width: 640px;
+    background: #fffefc;
+    border: 1px solid #eedede;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 50px 42px;
+    text-align: left;
+  }
+  .letter p{
+    font-family: 'Caveat', cursive;
+    font-size: 23px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  .letter .signature{
+    text-align: right;
+    font-size: 26px;
+    color: var(--maroon);
+    margin-top: 10px;
+  }
+
+  /* ================= CLOSING ================= */
+  #closing{
+    background: radial-gradient(circle at 50% 50%, #fff 0%, var(--pink) 100%);
+  }
+  .poem p{
+    font-family: 'Dancing Script', cursive;
+    font-size: 28px;
+    line-height: 1.6;
+    color: var(--maroon);
+  }
+  .keep-smile{
+    margin-top: 26px;
+    font-size: 44px !important;
+    font-weight: 700;
+  }
+  .music-btn{
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--pink-deep);
+    background: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  @media (max-width: 640px){
+    .bouquet-video{ height: min(50vh, 440px); }
+    .polaroid-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .from-me-text{ font-size: 26px; max-width: 320px; }
+    .letter{ padding: 34px 24px; }
+    .letter p{ font-size: 20px; }
+    .poem p{ font-size: 22px; }
+    .keep-smile{ font-size: 32px !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="hearts-container"></div>
+
+<!-- ================= INTRO ================= -->
+<section id="intro" class="screen">
+  <div class="intro-title">Hiiii Chathumiiiiiiii</div>
+  <div class="gift-box" onclick="openGift()">
+    <img src="lavender-flower-bouque.png" alt="lavender flower bouquet">
+    <p>tap to open your suprise</p>
+  </div>
+</section>
+
+<!-- ================= BOUQUET REVEAL ================= -->
+<section id="bouquet" class="screen">
+  <video class="bouquet-video" src="bouquet-reveal-purple.mp4" poster="bouquet-reveal-poster.jpg" autoplay muted loop playsinline preload="auto"></video>
+  <div class="from-me-text">Since I'm a thousand miles away from you.</div>
+  <button class="next-btn" onclick="goTo('memories')">continue ↓</button>
+</section>
+
+<!-- ================= PHOTO MEMORIES ================= -->
+<section id="memories" class="screen">
+  <div class="section-title">Little Moments</div>
+  <div class="polaroid-grid">
+    <div class="polaroid"><img src="pic_1.jpeg" alt="memory photo"></div>
+    <div class="polaroid"><video src="video_1.mp4" autoplay muted loop playsinline></video></div>
+    <div class="polaroid"><video src="video_2.mp4" autoplay muted loop playsinline></video></div>
+    <div class="polaroid"><img src="pic_2.jpeg" alt="memory photo"></div>
+    <div class="polaroid"><video src="video_3.mp4" autoplay muted loop playsinline></video></div>
+    <div class="polaroid"><video src="video_4.mp4" autoplay muted loop playsinline></video></div>
+    <div class="polaroid"><video src="video_5.mp4" autoplay muted loop playsinline></video></div>
+    <div class="polaroid"><video src="video_6.mp4" autoplay muted loop playsinline></video></div>
+  </div>
+  <button class="next-btn" onclick="goTo('note')">continue ↓</button>
+</section>
+
+<!-- ================= HANDWRITTEN NOTE ================= -->
+<section id="note" class="screen">
+  <div class="letter">
+    <p>To Chathumiiiiii,</p>
+    <p>I'm writing this little note because I'm not there to do some crazy things together. Recently, I started wondering why you are so capable of connecting with people and leaving a small, kind, and sweet imprint on their minds, even when they are complete strangers.</p>
+    <p>For a moment, I thought maybe you had some kind of enchanting charm that you brought with you when you came from heaven. But the problem is, I never really felt that charm myself, so there might be something else behind it&hellip; or maybe your charm just isn&rsquo;t powerful enough to charm me ;-).</p>
+    <p>But after giving it some thought, I realized that the true essence of your charm is your sweet little smile. Even though you still don&rsquo;t know how to smile for a picture-perfect photograph, you naturally share a kind little smile with the people you meet.</p>
+    <p>It is like the whip cracks in the "Asela Perahara" &mdash; the first thing that catches everyone's attention. Then comes your sweet voice, like the sound of a flute spreading across Kandy Lake. When people get to know you better, your giggles appear like the rhythms of traditional drummers in the Perahara.</p>
+    <p>Then you unlock your next stage: whimsical and adorable behaviour, just like the traditional Udarata dancers. Last but not least, the splendid elephant represents the energy and happiness you create around the people you meet.</p>
+    <p>But there are some days when we all need to restore our energy. I&rsquo;m sorry that I wasn&rsquo;t there to do something crazy together and help bring your energy back.</p>
+    <p>There is a saying: "It is the same rainy day that makes the umbrella seller happier and the ice cream seller sadder." You are like the ice cream seller &mdash; everyone likes and loves the ice cream seller, but rainy days can be difficult for him. Still, he keeps looking forward to better days.</p>
+    <p>So, let&rsquo;s hope for better days.</p>
+    <p class="signature">You know who I am.</p>
+  </div>
+  <button class="next-btn" onclick="goTo('closing')">continue ↓</button>
+</section>
+
+<!-- ================= CLOSING MESSAGE ================= -->
+<section id="closing" class="screen">
+  <button id="music-toggle" class="music-btn" onclick="toggleMusic()">🔊</button>
+  <div class="poem">
+    <p>
+      Better days are coming<br>
+      If no one told yaa<br>
+      I hate to hear<br>
+      you crying<br>
+      over the phone, dear<br>
+      for 28 years running<br>
+      You've been a soldier<br>
+      Better days are coming
+    </p>
+    <p class="keep-smile">Keep Smile</p>
+  </div>
+</section>
+
+<audio id="bgm" src="Better Days Coming.mp3" loop preload="auto"></audio>
+<audio id="delilah" src="Hey There Delilah.mp3" loop preload="auto"></audio>
+
+<script>
+  function goTo(id){
+    document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  }
+  function openGift(){
+    goTo('bouquet');
+    const bouquetVideo = document.querySelector('.bouquet-video');
+    if(bouquetVideo){ bouquetVideo.currentTime = 0; bouquetVideo.play().catch(()=>{}); }
+  }
+
+  // make sure the bouquet video attempts to play as soon as the page loads,
+  // not only when the gift box is tapped
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const bouquetVideo = document.querySelector('.bouquet-video');
+    if(bouquetVideo){ bouquetVideo.play().catch(()=>{}); }
+  });
+
+  // ---- background music on the closing section ----
+  const bgm = document.getElementById('bgm');
+  const musicBtn = document.getElementById('music-toggle');
+  let userPaused = false;
+
+  function updateMusicBtn(){
+    musicBtn.textContent = bgm.paused ? '🔇' : '🔊';
+  }
+  function toggleMusic(){
+    if(bgm.paused){
+      bgm.play().catch(()=>{});
+      userPaused = false;
+    } else {
+      bgm.pause();
+      userPaused = true;
+    }
+    updateMusicBtn();
+  }
+
+  const closingSection = document.getElementById('closing');
+  const musicObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        if(!userPaused){
+          bgm.play().catch(()=>{});
+        }
+      } else {
+        bgm.pause();
+      }
+      updateMusicBtn();
+    });
+  }, { threshold: [0, 0.6, 1] });
+  musicObserver.observe(closingSection);
+
+  // ---- "Hey There Delilah" plays only on the memories section (page 2) ----
+  const delilah = document.getElementById('delilah');
+  const memoriesSection = document.getElementById('memories');
+
+  const delilahObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting && entry.intersectionRatio > 0.4){
+        delilah.play().catch(()=>{});
+      } else {
+        delilah.pause();
+      }
+    });
+  }, { threshold: [0, 0.4, 1] });
+  delilahObserver.observe(memoriesSection);
+
+  // gentle floating hearts across the whole page
+  const heartsContainer = document.getElementById('hearts-container');
+  const symbols = ['♥','❀','✿'];
+  function spawnHeart(){
+    const el = document.createElement('span');
+    el.className = 'heart';
+    el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.fontSize = (12 + Math.random()*16) + 'px';
+    const duration = 8 + Math.random()*6;
+    el.style.animationDuration = duration + 's';
+    heartsContainer.appendChild(el);
+    setTimeout(()=> el.remove(), duration*1000);
+  }
+  setInterval(spawnHeart, 700);
+  for(let i=0;i<6;i++) setTimeout(spawnHeart, i*300);
+</script>
+
+</body>
+</html>
